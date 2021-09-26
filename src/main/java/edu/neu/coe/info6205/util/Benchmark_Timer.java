@@ -4,6 +4,13 @@
 
 package edu.neu.coe.info6205.util;
 
+import edu.neu.coe.info6205.sort.*;
+import edu.neu.coe.info6205.sort.elementary.InsertionSort;
+
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -125,4 +132,89 @@ public class Benchmark_Timer<T> implements Benchmark<T> {
     private final Consumer<T> fPost;
 
     final static LazyLogger logger = new LazyLogger(Benchmark_Timer.class);
+
+    static Random random = new Random();
+    static BaseHelper<Integer> helper = null;
+
+    private static Integer[] getOrderArray(int n){
+        Integer[] arr = new Integer[n];
+        for(int i = 0; i < n; i++){
+            arr[i] = i + 1;
+        }
+        return arr;
+    }
+
+    private static Integer[] getPartialOrderedArray(int n){
+        Integer[] array = generateRandomArray(n);
+        try {
+            helper = new BaseHelper<>("InsertionSort", array.length, Config.load(Benchmark_Timer.class));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        GenericSort<Integer> sorter = new InsertionSort<>(helper);
+        int from = 0;
+        int to = array.length/2;
+        sorter.sort(array, from, to);
+        return array;
+    }
+
+    private static Integer[] getReversedArray(int n){
+        Integer[] arr = new Integer[n];
+        for(int i = 0; i < n; i++){
+            arr[i] = n - i;
+        }
+        return arr;
+    }
+
+    public static Integer[] generateRandomArray(int arraySize){
+        Integer[] array = new Integer[arraySize];
+
+        for (int i = 0; i < arraySize; i++)
+        {
+            array[i] = random.nextInt(1000);
+        }
+
+        return array;
+    }
+
+    public static void benchmarking_sort(Integer[] array, String str){
+        SortWithHelper<Integer> sorter = new InsertionSort<>();
+        sorter.preProcess(array);
+        final Timer timer = new Timer();
+
+        final int zzz = 20;
+        final double mean = timer.repeat(50, () -> zzz, t -> {
+            sorter.sort(array);
+            return null;
+        });
+        System.out.println("Sorting " + str + "Mean time: " + mean);
+    }
+
+
+    public static void main(String[] args) {
+        getWarmupRuns(20);
+        int[] arraySize = {10,10,10,200, 400, 800, 1600, 3200, 6400};
+        for (int size : arraySize) {
+
+            System.out.println("Current array length: " + size);
+
+            Integer[] sorted = getOrderArray(size);
+            /*Ordered Array*/
+            benchmarking_sort(sorted,"Ordered Array");
+
+            /*Partial Ordered Array*/
+            Integer[] partial_ordered = getPartialOrderedArray(size);
+            benchmarking_sort(partial_ordered,"Partial Ordered Array");
+
+            /*Random Array*/
+            Integer[] random = generateRandomArray(size);
+            benchmarking_sort(random,"Random Array");
+
+            /*Reversed Array*/
+            Integer[] reversed = getReversedArray(size);
+            benchmarking_sort(reversed,"Reversed Order");
+
+            System.out.println("============================================");
+        }
+    }
 }

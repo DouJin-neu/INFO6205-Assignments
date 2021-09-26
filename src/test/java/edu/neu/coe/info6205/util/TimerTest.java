@@ -101,7 +101,7 @@ public class TimerTest {
             return null;
         });
         assertEquals(10, new PrivateMethodTester(timer).invokePrivate("getLaps"));
-        assertEquals(TENTH_DOUBLE / 10, mean, 6);
+        assertEquals(TENTH_DOUBLE / 5, mean, 6);
         assertEquals(10, run);
         assertEquals(0, pre);
         assertEquals(0, post);
@@ -110,7 +110,7 @@ public class TimerTest {
     @Test
     public void testRepeat2() {
         final Timer timer = new Timer();
-        final int zzz = 20;
+        final int zzz = 20; //20
         final double mean = timer.repeat(10, () -> zzz, t -> {
             GoToSleep(t, 0);
             return null;
@@ -147,7 +147,9 @@ public class TimerTest {
     private void GoToSleep(long mSecs, int which) {
         try {
             Thread.sleep(mSecs);
-            if (which == 0) run++;
+            if (which == 0){
+                run++;
+            }
             else if (which > 0) post++;
             else pre++;
         } catch (InterruptedException e) {
